@@ -75,7 +75,7 @@ def init(data, canvas):
     data.fillWidth = 2
     data.emptyWidth = 1 
     data.board = make2dList(data.rows, data.cols, "")
-    data.board[0][0] = "A"
+    data.board[25][25] = "A"
     data.margin = 10 # margin around grid
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
@@ -85,9 +85,9 @@ def init(data, canvas):
     data.cRow = data.rows//2
     data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
-    data.rightCol = data.leftCol + data.visCols
+    data.rightCol = data.cCol+(data.visCols//2)
     data.topRow = data.cRow-data.visRows//2
-    data.bottomRow = data.topRow + data.visRows
+    data.bottomRow = data.cRow+(data.visRows//2)
     db(data.leftCol,data.rightCol,data.topRow,data.bottomRow)
    
 def getWord(board):
@@ -129,9 +129,9 @@ def checkWords(board):
     else:
         return falseWords
 
-def updateRowsCols(data): #double-check/fix shit when you're awake
-    data.visRows = data.height//data.squareSize
-    data.visCols = data.width//data.squareSize
+# def updateRowsCols(data): #double-check/fix shit when you're awake
+#     data.visRows = data.height//data.squareSize
+#     data.visCols = data.width//data.squareSize
 
 def updateTileTray(data, tileBoard):
     index = 0
@@ -169,17 +169,21 @@ def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
     if (data.sCol < data.leftCol): 
-        data.cCol -= 1
+        data.cCol += dcol
         data.leftCol = data.cCol-data.visCols//2
+        data.rightCol = data.cCol+(data.visCols//2)
     elif (data.sCol >= data.rightCol):  
-        data.cCol += 1
-        data.rightCol = data.leftCol + data.visCols
+        data.cCol += dcol
+        data.leftCol = data.cCol-data.visCols//2
+        data.rightCol = data.cCol+(data.visCols//2)
     elif (data.sRow < data.topRow): 
-        data.cRow -= 1
+        data.cRow += drow
         data.topRow = data.cRow-data.visRows//2
+        data.bottomRow = data.cRow+(data.visRows//2)
     elif (data.sRow >= data.bottomRow): 
-        data.cRow += 1
-        data.bottomRow = data.topRow + data.visRows
+        data.cRow += drow
+        data.topRow = data.cRow-data.visRows//2
+        data.bottomRow = data.cRow+(data.visRows//2)
 
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
@@ -211,6 +215,7 @@ def keyPressed(event, data):
         msg = "Peel:\n"
         print ("sending: ", msg,)
         data.server.send(msg.encode())
+    db(data.leftCol, data.rightCol, data.topRow, data.bottomRow, data.cRow, data.cCol, data.sRow, data.sCol)
 
 def timerFired(data):
     if (serverMsg.qsize() > 0):
@@ -330,7 +335,7 @@ def run(width=300, height=300, serverMsg=None, server=None):
     def sizeChanged(event, data):
         data.width = event.width
         data.height = event.height
-        updateRowsCols(data)
+        #updateRowsCols(data)
         redrawAll(canvas, data)
 
     # Set up data and call init
