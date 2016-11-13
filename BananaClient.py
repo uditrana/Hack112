@@ -1,22 +1,29 @@
-# grid-demo.py
+#banana graphics!
 
 from tkinter import *
+import math
 import string
 ###############################
-#Helpers
+#BananaGrams Graphics
 ###############################
+
+def db(*args):
+    dbOn = False
+    if (dbOn): print(*args)
+
 def make2dList(rows, cols, val): #adapted from course notes
     a=[]
     for row in range(rows): a += [[val]*cols]
     return a
 
 def init(data):
-    data.rows = 8
-    data.cols = 8
-    data.tiles = []
-    data.trayRows = int(roundHalfUp(len(data.tiles)/data.cols))
+    data.squareSize = 40
+    data.rows = 9
+    data.cols = 9
+    data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
+    data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
-    data.tileBoard = updateTileTray(data, data.tiles, make2dList(data.trayRows, data.trayCols, ""))
+    data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, "")) #make this better when you're more coherent
     data.EMPTY = ""
     data.emptyColor = "light yellow"
     data.fillColor = "gold"
@@ -28,10 +35,15 @@ def init(data):
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
 
-def updateTileTray(data, tiles, tileBoard):
+def updateTileTray(data, tileBoard):
+    index = 0
     for row in range(data.trayRows):
         for col in range(data.trayCols):
-            
+            if index < len(data.tiles):
+                db("tiles/tileboard", data.tiles, tileBoard)
+                tileBoard[row][col] = data.tiles[index]
+            index += 1
+    return tileBoard
 
 #cell stuff from Course Notes
 def pointInGrid(x, y, data):
@@ -46,10 +58,10 @@ def getCell(x, y, data):
         return (0, 0)
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
-    cellWidth  = gridWidth / (data.cols+data.trayCols)
-    cellHeight = gridHeight / (data.rows+data.trayRows)
-    row = (y - data.margin) // cellHeight
-    col = (x - data.margin) // cellWidth
+    # cellWidth  = gridWidth / (data.cols+data.trayCols)
+    # cellHeight = gridHeight / (data.rows+data.trayRows)
+    row = (y - data.margin) // data.squareSize
+    col = (x - data.margin) // data.squareSize
     # triple-check that we are in bounds
     row = min(data.rows-1, max(0, row))
     col = min(data.cols-1, max(0, col))
@@ -64,7 +76,10 @@ def keyPressed(event, data):
     elif key == "Down" and data.sRow < data.rows-1: data.sRow += 1
     elif key == "Left" and data.sCol > 0: data.sCol -= 1
     elif key == "Right" and data.sCol < data.cols-1: data.sCol += 1
-    elif key in data.tiles: data.board[data.sRow][data.sCol] = key.upper()
+    elif key.upper() in data.tiles: 
+        data.board[data.sRow][data.sCol] = key.upper()
+        data.tiles.remove(key.upper())
+        data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
 
 def timerFired(data):
     pass
@@ -74,12 +89,12 @@ def getCellBounds(row, col, data):
     # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 3*data.margin
-    columnWidth = gridWidth / (data.cols)
-    rowHeight = gridHeight / (data.rows+data.trayRows)
-    x0 = data.margin + col * columnWidth
-    x1 = data.margin + (col+1) * columnWidth
-    y0 = data.margin + row * rowHeight
-    y1 = data.margin + (row+1) * rowHeight
+    # columnWidth = gridWidth / (data.cols)
+    # rowHeight = gridHeight / (data.rows+data.trayRows)
+    x0 = data.margin + col * data.squareSize
+    x1 = data.margin + (col+1) * data.squareSize
+    y0 = data.margin + row * data.squareSize
+    y1 = data.margin + (row+1) * data.squareSize
     return (x0, y0, x1, y1)
 
 def redrawAll(canvas, data):
@@ -128,7 +143,7 @@ def drawGrid(canvas, data):
 # use the run function as-is
 ####################################
 
-def run(width=300, height=347.5):
+def run(width=300, height=300):
     def redrawAllWrapper(canvas, data):
         canvas.delete(ALL)
         canvas.create_rectangle(0, 0, data.width, data.height,
@@ -181,4 +196,4 @@ def run(width=300, height=347.5):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(600, 685)
+run(600, 600)
