@@ -79,9 +79,8 @@ def init(data, canvas):
     data.margin = 10 # margin around grid
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
-    data.visRows = data.height//data.squareSize
-    data.visCols = data.width//data.squareSize
-    data.cRow = data.rows//2
+    data.visRows = (data.height-data.visMargin)//data.squareSize
+    data.visCols = (data.width-data.visMargin)//data.squareSize
     data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
     data.rightCol = data.cCol+(data.visCols//2)
@@ -130,8 +129,12 @@ def checkWords(board):
         return falseWords
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
-    data.visRows = data.height//data.squareSize
-    data.visCols = data.width//data.squareSize
+    data.visRows = (data.height-data.visMargin)//data.squareSize
+    data.visCols = (data.width-data.visMargin)//data.squareSize
+    data.leftCol = data.cCol-data.visCols//2
+    data.rightCol = data.cCol+(data.visCols//2)
+    data.topRow = data.cRow-data.visRows//2
+    data.bottomRow = data.cRow+(data.visRows//2)
 
 def updateTileTray(data, tileBoard):
     index = 0
