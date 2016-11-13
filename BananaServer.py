@@ -3,7 +3,7 @@ import threading
 import random
 from queue import Queue
 
-HOST = "128.237.180.202" #current IP in GHC6115
+HOST = "128.237.209.154" #current IP in GHC6115
 PORT = 50003
 BACKLOG = 4
 
@@ -15,9 +15,12 @@ print("looking for connection")
 class Pile(object):
   def __init__(self):
     pass
+
   d = ({'A':13, 'B':3, 'C':3, 'D':6, 'E':18, 'F':3, 'G':4,'H':3, 'I':12, 
     'J':2, 'K':2, 'L':5, 'M':3, 'N':8, 'O':11, 'P':3, 'Q':2, 'R':9, 
     'S':6, 'T':9, 'U':6, 'V':3, 'W':3, 'X':2, 'Y':3, 'Z':2})
+  total = 140
+
   @staticmethod
   def peel():
     while True:
@@ -28,10 +31,23 @@ class Pile(object):
         break
     print(letter +" was peeled!")
     return letter
-  def start(self):
-    pass
-  def exchange(self):
-    pass
+
+  @staticmethod
+  def start():
+    letterList = []
+    for i in range(7):
+      letterList.append(Pile.peel())
+    letterList=",".join(letterList)
+    return letterList
+
+  @staticmethod
+  def exchange(letter):
+    letterList = []
+    for i in range(3):
+      letterList.append(Pile.peel())
+    d[letter]+=1
+    letterList=",".join(letterList)
+    return letterList
 
 def handleClient(client, serverChannel, cID, clientele): #this adds the client ID and msg to Q
   client.setblocking(1)
@@ -69,6 +85,18 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
             info = Pile.peel()
             sendMsg = ind+txt+info+"\n" #create message to player
           clientele[cID].send(sendMsg.encode()) #encode and add it to dict
+      if ind == "Exchange":
+        print("Exchange a letter with three")
+        if Pile.total < 3:
+          print("Not enough letters to exchange")
+          clientele[senderID] = "Exchange falied!:Not enough letters to exchange:"
+        else:
+          repLetter = msg.split(":")[0]
+          ind += ":"
+          txt = "You exchanged " + letter + ":"
+          info = Pile.exchange(letter)
+          clientele[senderID] = ind + txt + info
+
     serverChannel.task_done() #remove item from Q
 
 clientele = {}
