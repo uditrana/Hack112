@@ -1,5 +1,6 @@
 import socket
 import threading
+import random
 from queue import Queue
 
 HOST = "128.237.209.154" #current IP in GHC6115
@@ -18,7 +19,7 @@ class Pile(object):
     'J':2, 'K':2, 'L':5, 'M':3, 'N':8, 'O':11, 'P':3, 'Q':2, 'R':9, 
     'S':6, 'T':9, 'U':6, 'V':3, 'W':3, 'X':2, 'Y':3, 'Z':2})
   @staticmethod
-  def peel(self):
+  def peel():
     while True:
       n = random.randint(65,90)
       letter = chr(n)
@@ -55,12 +56,18 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
     senderID, msg = int(msg.split("_")[0]), "_".join(msg.split("_")[1:]) #separates id from msg
     if (msg):
       ind = (msg.split(":")[0])
-      if ind=="peel":
+      if ind=="Peel":
+        print ("I should be peeling!")
+        ind+=":"
         for cID in clientele: #for each client
           if cID != senderID: #if client not the sender
-            sendMsg = str(senderID) + " Peeled!" + Pile.peel() + "\n" #create message to all other players!
+            txt = str(senderID) + " Peeled!" +":"
+            info = Pile.peel()
+            sendMsg = ind+txt+info+"\n" #create message to all other players!
           if cID == senderID: #if client is sender
-            sendMsg = "You Peeled!" + Pile.peel() + "\n" #create message to player
+            txt = "You Peeled!" +":"
+            info = Pile.peel()
+            sendMsg = ind+txt+info+"\n" #create message to player
           clientele[cID].send(sendMsg.encode()) #encode and add it to dict
     serverChannel.task_done() #remove item from Q
 

@@ -5,10 +5,8 @@ import math
 import string
 # import enchant
 import random
-###############################
-#BananaGrams Graphics
-###############################
 
+<<<<<<< HEAD
 f = open("dictionary.txt")
 d = []
 for line in f:
@@ -17,6 +15,41 @@ for line in f:
     d.append(l)
 d = set(d)
 
+=======
+####################
+#Multiplayer Things
+####################
+import socket
+import threading
+from queue import Queue
+
+HOST = "128.237.209.154"
+PORT = 50003
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+
+server.connect((HOST,PORT))
+print("connected to server")
+
+def handleServerMsg(server, serverMsg): #handles msgs from server
+  server.setblocking(1)
+  msg = ""
+  command = ""
+  while True:
+    msg += server.recv(10).decode("UTF-8")
+    command = msg.split("\n")
+    while (len(command) > 1):
+      readyMsg = command[0]
+      msg = "\n".join(command[1:])
+      serverMsg.put(readyMsg)
+      command = msg.split("\n")
+
+serverMsg = Queue(100)
+threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
+################################
+#Helpers
+################################
+>>>>>>> origin/master
 def db(*args):
     dbOn = False
     if (dbOn): print(*args)
@@ -25,7 +58,13 @@ def make2dList(rows, cols, val): #adapted from course notes
     a=[]
     for row in range(rows): a += [[val]*cols]
     return a
+<<<<<<< HEAD
 # 
+=======
+###############################
+#BananaGrams Graphics
+###############################
+>>>>>>> origin/master
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
@@ -53,8 +92,19 @@ def init(data):
     data.emptyWidth = 1 
     data.board = make2dList(data.rows, data.cols, "")
     data.margin = 10 # margin around grid
+<<<<<<< HEAD
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
+=======
+    data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
+    data.sCol = data.cols//2
+    # data.visRows = data.height//data.squareSize
+    # data.visCols = data.width//data.squareSize
+    data.scrollMargin = data.squareSize
+    data.cx = data.sRow
+    data.cy = data.sCol #in which we are trying to draw just the visible cells
+    # data.LeftRow = 
+>>>>>>> origin/master
    
 def getWord(board):
     wordsList = []
@@ -148,6 +198,16 @@ def getCell(x, y, data):
     col = min(data.cols-1, max(0, col))
     return (int(row), int(col))
 
+<<<<<<< HEAD
+=======
+def moveCursor(drow, dcol, data):
+    data.sRow += drow
+    data.sCol += dcol
+    data.sx += (dcol*data.squareSize)
+    data.sy += (drow*data.squareSize)
+    # if (data.sRow < data.scroll)
+
+>>>>>>> origin/master
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
 
@@ -174,9 +234,25 @@ def keyPressed(event, data):
             #all words on board are correct
             pass
     elif key == "space": return #add in remove tile
+    elif key == "1":
+        msg = "Peel:\n"
+        print ("sending: ", msg,)
+        data.server.send(msg.encode())
 
 def timerFired(data):
-    pass
+    if (serverMsg.qsize() > 0):
+      msg = serverMsg.get(False)
+      try:
+        print("recieved: ", msg)
+        msg = msg.split(":")
+        ind, txt, info= msg[0], msg[1],msg[2]
+        if ind=="Peel":
+          print ("Text is "+txt)
+          letter = info
+          data.tiles.append(letter)
+      except:
+        print("failed")
+      serverMsg.task_done()
 
 def getTileCellBounds(row, col, data):
     # aka "modelToView"
@@ -254,7 +330,7 @@ def drawGrid(canvas, data):
 # use the run function as-is
 ####################################
 
-def run(width=300, height=300):
+def run(width=300, height=300, serverMsg=None, server=None):
     def redrawAllWrapper(canvas, data):
         canvas.delete(ALL)
         canvas.create_rectangle(0, 0, data.width, data.height,
@@ -285,6 +361,8 @@ def run(width=300, height=300):
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
+    data.server = server
+    data.serverMsg = serverMsg
     data.width = width
     data.height = height
     data.timerDelay = 100 # milliseconds
@@ -308,4 +386,8 @@ def run(width=300, height=300):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
+<<<<<<< HEAD
 run(600, 600)
+=======
+run(600, 600, serverMsg, server)
+>>>>>>> origin/master
