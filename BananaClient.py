@@ -100,6 +100,19 @@ def keyPressed(event, data):
 def timerFired(data):
     pass
 
+def getTileCellBounds(row, col, data):
+    # aka "modelToView"
+    # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
+    gridWidth  = data.width - 2*data.margin
+    gridHeight = data.height - 2*data.margin
+    # columnWidth = gridWidth / (data.cols)
+    # rowHeight = gridHeight / (data.rows+data.trayRows)
+    x0 = data.margin + col * data.squareSize
+    x1 = data.margin + (col+1) * data.squareSize
+    y0 = gridHeight - data.margin + row * data.squareSize
+    y1 = data.margin + (row+1) * data.squareSize
+    return (x0, y0, x1, y1)
+
 def getCellBounds(row, col, data):
     # aka "modelToView"
     # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
@@ -143,7 +156,7 @@ def drawTiles(canvas, data):
             fill = data.fillColor
             width = data.fillWidth
             if data.tileBoard[row][col] != "": 
-                canvas.create_rectangle(x0, y0+data.margin, x1, y1+data.margin, fill=fill, width=width)
+                canvas.create_rectangle(x0, data.width-data.margin, x1, y1+data.margin, fill=fill, width=width)
                 canvas.create_text((x0+x1)/2, (y0+y1+2*data.margin)/2, text=data.tileBoard[row][col], font="Helvetica 20")
 
 def drawGrid(canvas, data):

@@ -2,7 +2,7 @@ import socket
 import threading
 from queue import Queue
 
-HOST = "128.237.192.150"
+HOST = "128.237.209.154"
 PORT = 50003
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
