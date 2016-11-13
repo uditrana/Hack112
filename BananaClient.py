@@ -12,7 +12,7 @@ import socket
 import threading
 from queue import Queue
 
-HOST = "128.237.209.154"
+HOST = "128.237.180.202"
 PORT = 50003
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -70,10 +70,9 @@ def init(data):
     data.sCol = data.cols//2
     data.visRows = 10
     data.visCols = 10
-    data.scrollMargin = data.squareSize
     data.cx = data.rows//2
     data.cy = data.sCol #in which we are trying to draw just the visible cells
-    data.LeftRow = 
+    data.LeftRow = 0
    
 def getWord(board):
     wordsList = []
@@ -154,8 +153,7 @@ def getCell(x, y, data):
 def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
-    data.sx += (dcol*data.squareSize)
-    data.sy += (drow*data.squareSize)
+    if not ()
     # if (data.sRow < data.scroll)
 
 def mousePressed(event, data):

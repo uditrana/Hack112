@@ -3,7 +3,7 @@ import threading
 import random
 from queue import Queue
 
-HOST = "128.237.209.154" #current IP in GHC6115
+HOST = "128.237.180.202" #current IP in GHC6115
 PORT = 50003
 BACKLOG = 4
 
@@ -86,7 +86,7 @@ while True: #loop for adding clients
     clientele[cID].send(("newPlayer %d \n" % currID).encode()) #send new player info!
     client.send(("newPlayer %d \n" % cID).encode()) #tell the new player about all the old players
   clientele[currID] = client #dont really understand this line
-  print("connection recieved")
+  print("connection received")
   threading.Thread(target = handleClient, args =  #create a new thread for this new client
                         (client ,serverChannel, currID, clientele)).start() 
   #start_new_thread(handleClient, (client,serverChannel, currID))
