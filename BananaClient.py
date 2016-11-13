@@ -3,7 +3,6 @@
 from tkinter import *
 import math
 import string
-import enchant
 import random
 ###############################
 #BananaGrams Graphics
@@ -21,18 +20,8 @@ def make2dList(rows, cols, val): #adapted from course notes
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
-<<<<<<< HEAD
     data.rows = 50
     data.cols = 50
-=======
-    data.rows = 8
-    data.cols = 8
->>>>>>> origin/master
-    data.leftVisCol = 0
-    data.rightVisCol = 0
-    data.topVisRow = 0
-    data.botVisRow = 0
-    data.visCols = 0
     data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
@@ -45,12 +34,17 @@ def init(data):
     data.emptyWidth = 1 
     data.board = make2dList(data.rows, data.cols, "")
     data.margin = 10 # margin around grid
-    data.sRow = 0 #sRow, sCol denotes user-selected cell
-    data.sCol = 0
+    data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
+    data.sCol = data.cols//2
+    data.visRows = data.height//data.squareSize
+    data.visCols = data.width//data.squareSize
+    data.scrollMargin = data.squareSize
+    data.cx = data.sRow
+    data.cy = data.sCol #in which we are trying to draw just the visible cells
+    data.LeftRow = 
    
 def getWord(board):
     wordsList = []
-    eh = set()
     for x in range(len(board)): #row
         for y in range(len(board[0])): #col
             if board[x][y] != "":
@@ -125,15 +119,22 @@ def getCell(x, y, data):
     col = min(data.cols-1, max(0, col))
     return (int(row), int(col))
 
+def moveCursor(drow, dcol, data):
+    data.sRow += drow
+    data.sCol += dcol
+    data.sx += (dcol*data.squareSize)
+    data.sy += (drow*data.squareSize)
+    if (data.sRow < data.scroll)
+
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
 
 def keyPressed(event, data):
     key = (event.keysym)
-    if key == "Up" and data.sRow > 0: data.sRow -= 1
-    elif key == "Down" and data.sRow < data.rows-1: data.sRow += 1
-    elif key == "Left" and data.sCol > 0: data.sCol -= 1
-    elif key == "Right" and data.sCol < data.cols-1: data.sCol += 1
+    if key == "Up" and data.sRow > 0: moveCursor(-1, 0, data)
+    elif key == "Down" and data.sRow < data.rows-1: moveCursor(+1, 0, data)
+    elif key == "Left" and data.sCol > 0: moveCursor(0, -1, data)
+    elif key == "Right" and data.sCol < data.cols-1: moveCursor(0, +1, data)
     elif key.upper() in data.tiles:
         if data.board[data.sRow][data.sCol] == data.EMPTY:
             data.tiles.remove(key.upper())
@@ -143,13 +144,13 @@ def keyPressed(event, data):
         data.board[data.sRow][data.sCol] = key.upper()
         data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
-        check = checkWords(data.board)
-        if isinstance(check,list):
-            #check contains false words
-            pass
-        elif check == True:
-            #all words on board are correct
-            pass
+        # check = checkWords(data.board)
+        # if isinstance(check,list):
+        #     #check contains false words
+        #     pass
+        # elif check == True:
+        #     #all words on board are correct
+        #     pass
     elif key == "space": return #add in remove tile
 
 def timerFired(data):
