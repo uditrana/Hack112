@@ -5,9 +5,9 @@ import math
 import string
 import random
 
-# ####################
-# #Multiplayer Things
-# ####################
+####################
+#Multiplayer Things
+####################
 # import socket
 # import threading
 # from queue import Queue
@@ -56,6 +56,9 @@ def make2dList(rows, cols, val): #adapted from course notes
     a=[]
     for row in range(rows): a += [[val]*cols]
     return a
+
+def dirs():
+    return [(0,1),(0,-1),(1,0),(-1,0)]
 ###############################
 #BananaGrams Graphics
 ###############################
@@ -78,9 +81,9 @@ def init(data, canvas):
     data.margin = 10 # margin around grid
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
-    data.visRows = 10
-    data.visCols = 10
-    # data.scrollMargin = data.squareSize
+    data.visMargin = 50
+    data.visRows = (data.height-data.visMargin)//data.squareSize
+    data.visCols = (data.width-data.visMargin)//data.squareSize
     data.cRow = data.rows//2
     data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
@@ -114,10 +117,11 @@ def getWord(board):
                         wordsList.append("".join(word))
     return wordsList
     
-def checkWords(board):
+def checkWords(data, board):
     toCheck = getWord(board)
     correctWords = []
     falseWords = []
+    if len(data.tiles) != 0: return False
     for a in toCheck:
         if a in d:
             correctWords.append(a)
@@ -128,16 +132,20 @@ def checkWords(board):
     else:
         return falseWords
 
-# def updateRowsCols(data): #double-check/fix shit when you're awake
-#     data.visRows = data.height//data.squareSize
-#     data.visCols = data.width//data.squareSize
+def updateRowsCols(data): #double-check/fix shit when you're awake
+    data.visRows = (data.height-data.visMargin)//data.squareSize
+    data.visCols = (data.width-data.visMargin)//data.squareSize
+    data.leftCol = data.cCol-data.visCols//2
+    data.rightCol = data.cCol+(data.visCols//2)
+    data.topRow = data.cRow-data.visRows//2
+    data.bottomRow = data.cRow+(data.visRows//2)
 
 def updateTileTray(data, tileBoard):
     index = 0
     for row in range(data.trayRows):
         for col in range(data.trayCols):
             if index < len(data.tiles):
-                db("tiles/tileboard", data.tiles, tileBoard)
+                # db("tiles/tileboard", data.tiles, tileBoard)
                 tileBoard[row][col] = data.tiles[index]
             index += 1
     return tileBoard
@@ -148,17 +156,43 @@ def pointInGrid(x, y, data):
     return ((data.margin <= x <= data.width-data.margin) and
             (data.margin <= y <= data.height-data.margin))
 
+def isLegal(data): #checks to see if all items on the board are connected
+    boardCheck = make2dList(data.rows, data.cols, 0)
+    startRow, startCol = None, None
+    for row in range(data.rows):
+        for col in range(data.cols):
+            if startRow == None: (startRow, startCol) = (row, col)
+            if data.board[row][col] != "":
+                boardCheck[row][col] = 1
+    def check(board, row, col):
+        if ((row < 0) or (row >= data.rows) or
+            (col < 0) or (col >= data.cols)):
+            return # off-board!
+        if (board[row][col] == 0):
+            return # hit a wall
+
+        # "fill" this cell
+        else: board[row][col] = 1
+
+        # then recursively fill its neighbors
+        check(board, row-1, col)
+        check(board, row+1, col)
+        check(board, row,   col-1, depth+1)
+        check(board, row,   col+1, depth+1)
+    board = check(boardCheck, startRow, startCol)
+    if board != make2dList(data.rows, data.cols, 0): return False
+    else: return True
+
+
 def getCell(x, y, data):
     # aka "viewToModel"
     # return (row, col) in which (x, y) occurred or (-1, -1) if outside grid.
     if (not pointInGrid(x, y, data)):
-        return (0, 0)
+        return None
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
-    # cellWidth  = gridWidth / (data.cols+data.trayCols)
-    # cellHeight = gridHeight / (data.rows+data.trayRows)
-    row = (y - data.margin) // data.squareSize
-    col = (x - data.margin) // data.squareSize
+    row = data.topRow + (y - data.margin) // data.squareSize
+    col = data.leftCol + (x - data.margin) // data.squareSize
     # triple-check that we are in bounds
     row = min(data.rows-1, max(0, row))
     col = min(data.cols-1, max(0, col))
@@ -185,7 +219,13 @@ def moveCursor(drow, dcol, data):
         data.bottomRow = data.cRow+(data.visRows//2)
 
 def mousePressed(event, data):
-    (data.sRow, data.sCol) = getCell(event.x, event.y, data)
+    if getCell(event.x, event.y, data) != None:
+        (data.sRow, data.sCol) = getCell(event.x, event.y, data)
+        (data.cRow, data.cCol) = (data.sRow, data.sCol)
+        data.leftCol = data.cCol-data.visCols//2
+        data.rightCol = data.cCol+(data.visCols//2)
+        data.topRow = data.cRow-data.visRows//2
+        data.bottomRow = data.cRow+(data.visRows//2)
 
 def keyPressed(event, data):
     key = (event.keysym)
@@ -200,19 +240,21 @@ def keyPressed(event, data):
             data.tiles.remove(key.upper())
             data.tiles.append(data.board[data.sRow][data.sCol])
         data.board[data.sRow][data.sCol] = key.upper()
-        data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
     elif key == "space":
         if data.board[data.sRow][data.sCol] != data.EMPTY:
             data.tiles.append(data.board[data.sRow][data.sCol])
             data.board[data.sRow][data.sCol] = data.EMPTY#add in remove tile
     elif key == "1":
-        check = checkWords(data.board)
-        if check==True:
+        check = checkWords(data, data.board)
+        legal = isLegal(data)
+        if legal==True and check==True:
             msg = "Peel:\n"
             print ("sending: ", msg,)
             # data.server.send(msg.encode())
-        else: print("These aren't real words!:", check)
+        elif check==False: print("You're not out of tiles yet!")
+        elif isinstance(check, list): print("These aren't real words!:", check)
+        elif not legal: print("Your board isn't valid!")
     elif ignoreKey(event) and len(event.keysym == 1) and event.keysym.isalpha():
         msg = "Exchange:" + event.keysym + "\n"
         print("Sending: ", msg)
@@ -247,8 +289,6 @@ def getTileCellBounds(row, col, data):
     # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
-    # columnWidth = gridWidth / (data.cols)
-    # rowHeight = gridHeight / (data.rows+data.trayRows)
     x0 = data.margin + col * data.squareSize
     x1 = data.margin + (col+1) * data.squareSize
     y0 = gridHeight - ((row+1) * data.squareSize)
@@ -340,7 +380,7 @@ def run(width=300, height=300, serverMsg=None, server=None):
     def sizeChanged(event, data):
         data.width = event.width
         data.height = event.height
-        # updateRowsCols(data)
+        updateRowsCols(data)
         redrawAll(canvas, data)
 
     # Set up data and call init
@@ -370,4 +410,6 @@ def run(width=300, height=300, serverMsg=None, server=None):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(600, 600)
+run(600, 600, 
+    # serverMsg, server
+    )
