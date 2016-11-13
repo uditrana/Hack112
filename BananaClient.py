@@ -65,11 +65,11 @@ def init(data, canvas):
     data.squareSize = 40
     data.rows = 50
     data.cols = 50
-    # data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
+    #data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.tiles = []
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
-    data.tileBoard = [] #make this better when you're more coherent
+    data.tileBoard = [] 
     data.EMPTY = ""
     data.emptyColor = "light yellow"
     data.fillColor = "gold"
@@ -80,8 +80,10 @@ def init(data, canvas):
     data.margin = 10 # margin around grid
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
+    data.visMargin = 50
     data.visRows = (data.height-data.visMargin)//data.squareSize
     data.visCols = (data.width-data.visMargin)//data.squareSize
+    data.cRow = data.rows//2
     data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
     data.rightCol = data.cCol+(data.visCols//2)
@@ -129,7 +131,10 @@ def checkWords(data, board):
     if correctWords == toCheck:
         return True
     else:
-        return falseWords
+        false = ""
+        for word in falseWords:
+            false += word + "\n"
+        return "False Words"+"\n"+false
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
     data.visRows = (data.height-data.visMargin)//data.squareSize
@@ -159,6 +164,35 @@ def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
     return ((data.margin <= x <= data.width-data.margin) and
             (data.margin <= y <= data.height-data.margin))
+
+def isLegal(data): #checks to see if all items on the board are connected
+    # boardCheck = make2dList(data.rows, data.cols, 0)
+    # startRow, startCol = None, None
+    # for row in range(data.rows):
+    #     for col in range(data.cols):
+    #         if startRow == None: (startRow, startCol) = (row, col)
+    #         if data.board[row][col] != "":
+    #             boardCheck[row][col] = 1
+    # def check(board, row, col):
+    #     if ((row < 0) or (row >= data.rows) or
+    #         (col < 0) or (col >= data.cols)):
+    #         return # off-board!
+    #     if (board[row][col] == 0):
+    #         return # hit a wall
+
+    #     # "fill" this cell
+    #     else: board[row][col] = 1
+
+    #     # then recursively fill its neighbors
+    #     check(board, row-1, col)
+    #     check(board, row+1, col)
+    #     check(board, row,   col-1, depth+1)
+    #     check(board, row,   col+1, depth+1)
+    # board = check(boardCheck, startRow, startCol)
+    # db(board)
+    # if board != make2dList(data.rows, data.cols, 0): return False
+    # else: return True
+    return True
 
 def getCell(x, y, data):
     # aka "viewToModel"
@@ -223,7 +257,8 @@ def keyPressed(event, data):
             data.board[data.sRow][data.sCol] = data.EMPTY#add in remove tile
     elif key == "1":
         check = checkWords(data, data.board)
-        if check==True:
+        legal = isLegal(data)
+        if legal and check:
             msg = "Peel:\n"
             printToSideBar(data,msg)
             data.server.send(msg.encode())
@@ -321,7 +356,7 @@ def drawTiles(canvas, data):
     updateTileTray(data)
     db("fuc", data.trayRows, data.trayCols)
     for row in range(data.trayRows):
-        for col in range(data.trayCols-1):
+        for col in range(data.trayCols):
             (x0, y0, x1, y1) = getTileCellBounds(row, col, data)
             db("ah", data.tileBoard, row, col)
             fill = data.fillColor
