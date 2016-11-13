@@ -18,7 +18,6 @@ def init(data):
     data.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
 
 def mousePressed(event, data):
-    if data.event.x
 
 def keyPressed(event, data):
     pass
@@ -28,13 +27,7 @@ def timerFired(data):
 
 def redrawAll(canvas, data):
     # draw grid of cells
-    for row in range(data.rows):
-        for col in range(data.cols):
-            (x0, y0, x1, y1) = getCellBounds(row, col, data)
-            fill = "orange" if (data.selection == (row, col)) else "cyan"
-            canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
-    canvas.create_text(data.width/2, data.height/2 - 15, text="Click in cells!",
-                       font="Arial 26 bold", fill="darkBlue")
+    
 
 ####################################
 # use the run function as-is
