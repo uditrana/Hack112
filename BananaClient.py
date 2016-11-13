@@ -17,17 +17,17 @@ def make2dList(rows, cols, val): #adapted from course notes
     a=[]
     for row in range(rows): a += [[val]*cols]
     return a
-
+# 
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
-<<<<<<< HEAD
+# <<<<<<< HEAD
     data.rows = 50
     data.cols = 50
-=======
+# =======
     data.rows = 8
     data.cols = 8
->>>>>>> origin/master
+# >>>>>>> origin/master
     data.leftVisCol = 0
     data.rightVisCol = 0
     data.topVisRow = 0
