@@ -203,20 +203,26 @@ def keyPressed(event, data):
         data.board[data.sRow][data.sCol] = key.upper()
         data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
-        # check = checkWords(data.board)
-        # if isinstance(check,list):
-        #     #check contains false words
-        #     pass
-        # elif check == True:
-        #     #all words on board are correct
-        #     pass
+        check = checkWords(data.board)
+        if isinstance(check,list):
+            #check contains false words
+            pass
+        elif check == True:
+            #all words on board are correct
+            pass
     elif key == "space": return #add in remove tile
     elif key == "1":
         msg = "Peel:\n"
         print ("sending: ", msg,)
         data.server.send(msg.encode())
-    db(data.leftCol, data.rightCol, data.topRow, data.bottomRow, data.cRow, data.cCol, data.sRow, data.sCol)
-
+    elif ignoreKey(event) and len(event.keysym == 1) and event.keysym.isalpha():
+        msg = "Exchange:" + event.keysym + "\n"
+        print("Sending: ", msg)
+        data.server.send(msg.encode())
+def ignoreKey(event):
+    # Helper function to return the key from the given event
+    ignoreSyms = [ "Shift_L", "Shift_R", "Control_L", "Control_R", "Caps_Lock" ]
+    return (event.keysym in ignoreSyms)
 def timerFired(data):
     if (serverMsg.qsize() > 0):
       msg = serverMsg.get(False)
@@ -228,7 +234,7 @@ def timerFired(data):
           print ("Text is "+txt)
           letter = info
           data.tiles.append(letter)
-        elif ind == "Replace":
+        elif ind == "Exchange":
             print("Text is " + txt)
             letters = info.split(",")
             data.tiles.extend(letters)
@@ -335,7 +341,7 @@ def run(width=300, height=300, serverMsg=None, server=None):
     def sizeChanged(event, data):
         data.width = event.width
         data.height = event.height
-        #updateRowsCols(data)
+        # updateRowsCols(data)
         redrawAll(canvas, data)
 
     # Set up data and call init
