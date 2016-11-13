@@ -64,7 +64,8 @@ def init(data, canvas):
     data.squareSize = 40
     data.rows = 50
     data.cols = 50
-    data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
+    # data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
+    data.tiles = []
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
     data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, "")) #make this better when you're more coherent
@@ -88,7 +89,7 @@ def init(data, canvas):
     data.bottomRow = data.cRow+(data.visRows//2)
     db(data.leftCol,data.rightCol,data.topRow,data.bottomRow)
    
-def getWord(board):
+def getWord(data, board):
     wordsList = []
     for x in range(len(board)): #row
         for y in range(len(board[0])): #col
@@ -235,6 +236,7 @@ def timerFired(data):
       msg = serverMsg.get(False)
       try:
         print("recieved: ", msg)
+        print("ugh " + msg)
         msg = msg.split(":")
         ind, txt, info= msg[0], msg[1],msg[2]
         if ind=="Peel":
@@ -244,12 +246,12 @@ def timerFired(data):
         elif ind == "Exchange":
             print("Text is " + txt)
             letters = info.split(",")
-            data.tiles.extend(letters)
+            data.tiles.append(letters)
         elif ind == "Start":
             print("Text is " + txt)
             letters = info.split(",")
             print(letters)
-            data.tiles.extend(letters)
+            data.tiles.append(letters)
 
       except:
         print("failed")
