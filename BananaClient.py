@@ -17,9 +17,10 @@ def make2dList(rows, cols, val): #adapted from course notes
     return a
 
 def init(data):
+    data.sidebarWidth = 120
     data.squareSize = 40
-    data.rows = 9
-    data.cols = 9
+    data.rows = 10
+    data.cols = 10
     data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
@@ -34,6 +35,10 @@ def init(data):
     data.margin = 10 # margin around grid
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
+
+def updateRowsCols(data): #double-check/fix shit when you're awake
+    data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
+    data.cols = (data.width - data.sidebarWidth)//data.squareSize
 
 def updateTileTray(data, tileBoard):
     index = 0
@@ -76,10 +81,16 @@ def keyPressed(event, data):
     elif key == "Down" and data.sRow < data.rows-1: data.sRow += 1
     elif key == "Left" and data.sCol > 0: data.sCol -= 1
     elif key == "Right" and data.sCol < data.cols-1: data.sCol += 1
-    elif key.upper() in data.tiles: 
+    elif key.upper() in data.tiles:
+        if data.board[data.sRow][data.sCol] == data.EMPTY:
+            data.tiles.remove(key.upper())
+        else:
+            data.tiles.remove(key.upper())
+            data.tiles.append(data.board[data.sRow][data.sCol])
         data.board[data.sRow][data.sCol] = key.upper()
-        data.tiles.remove(key.upper())
+        data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
+    elif key == "space": return #add in remove tile
 
 def timerFired(data):
     pass
@@ -103,6 +114,10 @@ def redrawAll(canvas, data):
     drawLetters(canvas, data)
     drawSelection(canvas, data)
     drawTiles(canvas, data)
+    drawSidebar(canvas, data)
+
+def drawSidebar(canvas, data):
+    canvas.create_rectangle(data.width-data.sidebarWidth-data.margin, data.margin, data.width-data.margin, data.height-data.margin)
 
 def drawSelection(canvas, data):
     (x0, y0, x1, y1) = getCellBounds(data.sRow, data.sCol, data)
@@ -168,6 +183,7 @@ def run(width=300, height=300):
     def sizeChanged(event, data):
         data.width = event.width
         data.height = event.height
+        #updateRowsCols(data)
         redrawAll(canvas, data)
 
     # Set up data and call init
