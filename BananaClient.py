@@ -81,9 +81,12 @@ def init(data):
     data.visRows = 10
     data.visCols = 10
     data.scrollMargin = data.squareSize
-    data.cx = data.rows//2
-    data.cy = data.sCol #in which we are trying to draw just the visible cells
-    # data.LeftRow = 
+    data.cRow = data.sRow
+    data.cCol = data.sCol #in which we are trying to draw just the visible cells
+    data.leftCol = data.cCol-data.visCols//2
+    data.rightCol = data.leftCol + data.visCols
+    data.topRow = data.cRow-data.visRows//2
+    data.bottomRow = data.topRow + data.visRows
    
 def getWord(board):
     wordsList = []
@@ -168,9 +171,10 @@ def getCell(x, y, data):
 def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
-    data.sx += (dcol*data.squareSize)
-    data.sy += (drow*data.squareSize)
-    # if (data.sRow < data.scroll)
+    if (data.sCol < data.leftCol): data.leftCol = data.cCol-data.visCols//2
+    elif (data.sCol >= data.rightCol):  data.rightCol = data.leftCol + data.visCols
+    elif (data.sRow < data.topRow): data.topRow = data.cRow-data.visRows//2
+    elif (data.sRow >= data.bottomRow): data.bottomRow = data.topRow + data.visRows
 
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
@@ -278,12 +282,12 @@ def drawTiles(canvas, data):
                 canvas.create_text((x0+x1)/2, (y0+y1)/2, text=data.tileBoard[row][col], font="Helvetica 20")
 
 def drawGrid(canvas, data):
-    for row in range(data.rows):
-        for col in range(data.cols):
+    for row in range(data.visRows):
+        for col in range(data.visCols):
             (x0, y0, x1, y1) = getCellBounds(row, col, data)
             fill = data.emptyColor
             width = data.emptyWidth
-            if data.board[row][col] != data.EMPTY:
+            if data.board[data.topRow+row][data.leftCol+col] != data.EMPTY:
                 fill = data.fillColor
                 width = data.fillWidth
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
