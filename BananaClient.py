@@ -19,12 +19,12 @@ def make2dList(rows, cols, val): #adapted from course notes
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
-    data.rows = 50
-    data.cols = 50
-    data.leftVisCol = 
-    data.rightVisCol = 
-    data.topVisRow = 
-    data.botVisRow = 
+    data.rows = 8
+    data.cols = 8
+    data.leftVisCol = 0
+    data.rightVisCol = 0
+    data.topVisRow = 0
+    data.botVisRow = 0
     data.visCols = 0
     data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
@@ -36,7 +36,7 @@ def init(data):
     data.sWidth = 4
     data.fillWidth = 2
     data.emptyWidth = 1 
-    data.board = make2dList(data.rows, data.cols, "B")
+    data.board = make2dList(data.rows, data.cols, "")
     data.margin = 10 # margin around grid
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
@@ -109,8 +109,8 @@ def getTileCellBounds(row, col, data):
     # rowHeight = gridHeight / (data.rows+data.trayRows)
     x0 = data.margin + col * data.squareSize
     x1 = data.margin + (col+1) * data.squareSize
-    y0 = gridHeight - data.margin + row * data.squareSize
-    y1 = data.margin + (row+1) * data.squareSize
+    y0 = gridHeight - ((row+1) * data.squareSize)
+    y1 = gridHeight - (row * data.squareSize)
     return (x0, y0, x1, y1)
 
 def getCellBounds(row, col, data):
@@ -135,7 +135,7 @@ def redrawAll(canvas, data):
     drawSidebar(canvas, data)
 
 def drawSidebar(canvas, data):
-    canvas.create_rectangle(data.width-data.sidebarWidth-data.margin, data.margin, data.width-data.margin, data.height-data.margin)
+    canvas.create_rectangle(data.width-data.sidebarWidth-data.margin, data.margin, data.width-data.margin, data.height-data.margin, fill="white")
 
 def drawSelection(canvas, data):
     (x0, y0, x1, y1) = getCellBounds(data.sRow, data.sCol, data)
@@ -152,12 +152,12 @@ def drawLetters(canvas, data):
 def drawTiles(canvas, data):
     for row in range(data.trayRows):
         for col in range(data.trayCols):
-            (x0, y0, x1, y1) = getCellBounds(row+data.rows, col, data)
+            (x0, y0, x1, y1) = getTileCellBounds(row, col, data)
             fill = data.fillColor
             width = data.fillWidth
             if data.tileBoard[row][col] != "": 
-                canvas.create_rectangle(x0, data.width-data.margin, x1, y1+data.margin, fill=fill, width=width)
-                canvas.create_text((x0+x1)/2, (y0+y1+2*data.margin)/2, text=data.tileBoard[row][col], font="Helvetica 20")
+                canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
+                canvas.create_text((x0+x1)/2, (y0+y1)/2, text=data.tileBoard[row][col], font="Helvetica 20")
 
 def drawGrid(canvas, data):
     for row in range(data.rows):
