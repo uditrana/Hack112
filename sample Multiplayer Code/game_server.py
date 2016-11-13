@@ -2,7 +2,7 @@ import socket
 import threading
 from queue import Queue
 
-HOST = "128.237.192.150"
+HOST = "128.237.209.154"
 PORT = 50003
 BACKLOG = 4
 
@@ -11,15 +11,15 @@ server.bind((HOST,PORT))
 server.listen(BACKLOG)
 print("looking for connection")
 
-def handleClient(client, serverChannel, cID, clientele):
+def handleClient(client, serverChannel, cID, clientele): #this adds the client ID and msg to Q
   client.setblocking(1)
   msg = ""
   while True:
     try:
-      msg += client.recv(10).decode("UTF-8")
-      command = msg.split("\n")
-      while (len(command) > 1):
-        readyMsg = command[0]
+      msg += client.recv(10).decode("UTF-8") #creates message based on input
+      command = msg.split("\n") #splits message based on /n
+      while (len(command) > 1): #if we have a complete command
+        readyMsg = command[0] #the first part is a complete message
         msg = "\n".join(command[1:])
         serverChannel.put(str(cID) + "_" + readyMsg)
         command = msg.split("\n")
