@@ -12,6 +12,13 @@ import socket
 import threading
 from queue import Queue
 
+f = open("dictionary.txt")
+d = []
+d = f.readlines()
+for i in range(len(d)):
+    d[i] = d[i].replace("\n", "")
+d = set(d)
+
 HOST = "128.237.180.202"
 PORT = 50003
 
@@ -70,9 +77,10 @@ def init(data):
     data.sCol = data.cols//2
     data.visRows = 10
     data.visCols = 10
+    data.scrollMargin = data.squareSize
     data.cx = data.rows//2
     data.cy = data.sCol #in which we are trying to draw just the visible cells
-    data.LeftRow = 0
+    # data.LeftRow = 
    
 def getWord(board):
     wordsList = []
@@ -85,7 +93,7 @@ def getWord(board):
                         i = x
                         j = y
                         while j < len(board[0]) and  board[i][j] != "":
-                            word.append(board[i][j])
+                            word.append((board[i][j]).upper())
                             j+= 1
                         wordsList.append("".join(word))
                 if (x == 0 or board[x-1][y] == ""): #vertical
@@ -94,18 +102,17 @@ def getWord(board):
                         i = x
                         j = y
                         while i < len(board) and  board[i][j] != "":
-                            word.append(board[i][j])
+                            word.append((board[i][j]).upper())
                             i+= 1
                         wordsList.append("".join(word))
     return wordsList
     
 def checkWords(board):
     toCheck = getWord(board)
-    d = enchant.Dict("en_US")
     correctWords = []
     falseWords = []
     for a in toCheck:
-        if d.check(a):
+        if a in d:
             correctWords.append(a)
         else:
             falseWords.append(a)
@@ -113,6 +120,11 @@ def checkWords(board):
         return True
     else:
         return falseWords
+
+board = [["a","t",""],["","h",""],["p","e","r"]]
+print(checkWords(board))
+board = [["a","a","l"],["","b",""],["","a","b"]]
+print(checkWords(board))
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
     data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
@@ -153,7 +165,8 @@ def getCell(x, y, data):
 def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
-    if not ()
+    data.sx += (dcol*data.squareSize)
+    data.sy += (drow*data.squareSize)
     # if (data.sRow < data.scroll)
 
 def mousePressed(event, data):
