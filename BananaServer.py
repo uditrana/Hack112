@@ -96,7 +96,7 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
           ind += ":"
           txt = "You exchanged " + letter + ":"
           info = Pile.exchange(letter)
-          sendMsg = ind + txt + info
+          sendMsg = ind + txt + info + "\n"
           clientele[senderID].send(sendMsg.encode())
       if ind == "Start":
         print("Start the game")
@@ -104,7 +104,7 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
         txt = "Game is starting:"
         for cID in clientele:
           info = Pile.start()
-          sendMsg = ind + txt + info
+          sendMsg = ind + txt + info + "\n"
           print(sendMsg)
           clientele[cID].send(sendMsg.encode())
 

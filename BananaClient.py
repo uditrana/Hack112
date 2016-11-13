@@ -29,6 +29,7 @@ def handleServerMsg(server, serverMsg): #handles msgs from server
     command = msg.split("\n")
     while (len(command) > 1):
       readyMsg = command[0]
+      print(readyMsg)
       msg = "\n".join(command[1:])
       serverMsg.put(readyMsg)
       command = msg.split("\n")
@@ -49,7 +50,7 @@ d = set(d)
 #Helpers
 ################################
 def db(*args):
-    dbOn = True
+    dbOn = False
     if (dbOn): print(*args)
 
 def make2dList(rows, cols, val): #adapted from course notes
@@ -68,7 +69,7 @@ def init(data, canvas):
     data.tiles = []
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
-    data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, "")) #make this better when you're more coherent
+    data.tileBoard = [] #make this better when you're more coherent
     data.EMPTY = ""
     data.emptyColor = "light yellow"
     data.fillColor = "gold"
@@ -87,6 +88,8 @@ def init(data, canvas):
     data.topRow = data.cRow-data.visRows//2
     data.bottomRow = data.cRow+(data.visRows//2)
     db(data.leftCol,data.rightCol,data.topRow,data.bottomRow)
+    data.printed = ""
+    data.printedLength = 0
    
 def getWord(data, board):
     wordsList = []
@@ -113,8 +116,8 @@ def getWord(data, board):
                         wordsList.append("".join(word))
     return wordsList
     
-def checkWords(board):
-    toCheck = getWord(board)
+def checkWords(data, board):
+    toCheck = getWord(data, board)
     correctWords = []
     falseWords = []
     if len(data.tiles) != 0: return False
@@ -136,15 +139,20 @@ def updateRowsCols(data): #double-check/fix shit when you're awake
     data.topRow = data.cRow-data.visRows//2
     data.bottomRow = data.cRow+(data.visRows//2)
 
-def updateTileTray(data, tileBoard):
+def updateTileTray(data):
+    data.trayRows = int(math.ceil(len(data.tiles)/data.visCols))
+    data.trayCols = min(len(data.tiles), data.visCols)
+    tileBoard = make2dList(data.trayRows, data.trayCols, "")
     index = 0
+    db(data.trayRows, data.trayCols, len(data.tiles))
     for row in range(data.trayRows):
         for col in range(data.trayCols):
             if index < len(data.tiles):
                 # db("tiles/tileboard", data.tiles, tileBoard)
                 tileBoard[row][col] = data.tiles[index]
             index += 1
-    return tileBoard
+    db("BOB", tileBoard)
+    data.tileBoard = tileBoard
 
 #cell stuff from Course Notes
 def pointInGrid(x, y, data):
@@ -208,57 +216,61 @@ def keyPressed(event, data):
             data.tiles.remove(key.upper())
             data.tiles.append(data.board[data.sRow][data.sCol])
         data.board[data.sRow][data.sCol] = key.upper()
-        data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
+        data.tileBoard = updateTileTray(data)
     elif key == "space":
         if data.board[data.sRow][data.sCol] != data.EMPTY:
             data.tiles.append(data.board[data.sRow][data.sCol])
             data.board[data.sRow][data.sCol] = data.EMPTY#add in remove tile
     elif key == "1":
-        check = checkWords(data.board)
+        check = checkWords(data, data.board)
         if check==True:
             msg = "Peel:\n"
-            print ("sending: ", msg,)
+            printToSideBar(data,msg)
             data.server.send(msg.encode())
-        elif check==False: print("You're not out of tiles yet!")
-        else: print("These aren't real words!:", check)
+        elif check==False: printToSideBar(data,"Not out of tiles yet!")
+        else: printToSideBar(data,"Invalid:"+check)
     elif key == "Return":
         msg = "Start:\n"
-        print("Sending: ", msg)
+        printToSideBar(data,msg)
         data.server.send(msg.encode())
     elif ignoreKey(event) and len(event.keysym == 1) and event.keysym.isalpha():
         msg = "Exchange:" + event.keysym + "\n"
-        print("Sending: ", msg)
+        printToSideBar(data,msg)
         data.server.send(msg.encode())
+
 def ignoreKey(event):
     # Helper function to return the key from the given event
     ignoreSyms = [ "Shift_L", "Shift_R", "Control_L", "Control_R", "Caps_Lock" ]
     return (event.keysym in ignoreSyms)
-def timerFired(data):
-    updateTileTray(data, data.tileBoard)
-    if (serverMsg.qsize() > 0):
-      msg = serverMsg.get(False)
-      try:
-        print("recieved: ", msg)
-        print("ugh " + msg)
-        msg = msg.split(":")
-        ind, txt, info= msg[0], msg[1],msg[2]
-        if ind=="Peel":
-          print ("Text is "+txt)
-          letter = info
-          data.tiles.append(letter)
-        elif ind == "Exchange":
-            print("Text is " + txt)
-            letters = info.split(",")
-            data.tiles.append(letters)
-        elif ind == "Start":
-            print("Text is " + txt)
-            letters = info.split(",")
-            print(letters)
-            data.tiles.append(letters)
 
-      except:
-        print("failed")
-      serverMsg.task_done()
+def timerFired(data):
+    if (serverMsg.qsize() > 0):
+        msg = serverMsg.get(False)
+        try:
+            print("recieved: ", msg)
+            print("ugh " + msg)
+            msg = msg.split(":")
+            ind, txt, info= msg[0], msg[1],msg[2]
+            if ind=="Peel":
+                print ("Text is "+txt)
+                letter = info
+                data.tiles.append(letter)
+            elif ind == "Exchange":
+                print("Text is " + txt)
+                letters = info.split(",")
+                data.tiles.extend(letters)
+            elif ind == "Start":
+                print("Text is " + txt)
+                letters = info.split(",")
+                print(letters)
+                data.tiles.extend(letters)
+
+        except:
+            print("failed")
+        serverMsg.task_done()
+    db(data.tiles)
+    updateRowsCols(data)
+    updateTileTray(data)
 
 def getTileCellBounds(row, col, data):
     # aka "modelToView"
@@ -291,6 +303,7 @@ def redrawAll(canvas, data):
 
 def drawSidebar(canvas, data):
     canvas.create_rectangle(data.width-data.sidebarWidth-data.margin, data.margin, data.width-data.margin, data.height-data.margin, fill="white")
+    canvas.create_text(data.width-data.sidebarWidth,data.margin+200,text=data.printed,anchor="sw")
 
 def drawSelection(canvas, data):
     (x0, y0, x1, y1) = getCellBounds(data.sRow, data.sCol, data)
@@ -305,11 +318,15 @@ def drawLetters(canvas, data):
 
 
 def drawTiles(canvas, data):
+    updateTileTray(data)
+    db("fuc", data.trayRows, data.trayCols)
     for row in range(data.trayRows):
-        for col in range(data.trayCols):
+        for col in range(data.trayCols-1):
             (x0, y0, x1, y1) = getTileCellBounds(row, col, data)
+            db("ah", data.tileBoard, row, col)
             fill = data.fillColor
             width = data.fillWidth
+            db("HEY", data.tileBoard[row][col])
             if data.tileBoard[row][col] != "": 
                 canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
                 canvas.create_text((x0+x1)/2, (y0+y1)/2, text=data.tileBoard[row][col], font="Helvetica 20")
@@ -325,7 +342,11 @@ def drawGrid(canvas, data):
                 width = data.fillWidth
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
 
-
+def printToSideBar(data,input):
+    if data.printedLength % 5 == 0:
+        data.printed = ""
+    data.printed += "\n"+input
+    data.printedLength += 1
 
 ####################################
 # use the run function as-is
