@@ -11,6 +11,27 @@ server.bind((HOST,PORT))
 server.listen(BACKLOG)
 print("looking for connection")
 
+class Letters(object):
+  def __init__(self):
+    pass
+  d = ({'A':13, 'B':3, 'C':3, 'D':6, 'E':18, 'F':3, 'G':4,'H':3, 'I':12, 
+    'J':2, 'K':2, 'L':5, 'M':3, 'N':8, 'O':11, 'P':3, 'Q':2, 'R':9, 
+    'S':6, 'T':9, 'U':6, 'V':3, 'W':3, 'X':2, 'Y':3, 'Z':2})
+  @staticmethod
+  def peel(self):
+    while True:
+      n = random.randint(65,90)
+      letter = chr(n)
+      if Letters.d[letter] > 0:
+        Letters.d[letter] -= 1
+        break
+    print(letter +" was peeled!")
+    return letter
+  def start(self):
+    pass
+  def exchange(self):
+    pass
+
 def handleClient(client, serverChannel, cID, clientele): #this adds the client ID and msg to Q
   client.setblocking(1)
   msg = ""
@@ -33,9 +54,13 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
     print("msg recv: ", msg) #print the message rcvd!
     senderID, msg = int(msg.split("_")[0]), "_".join(msg.split("_")[1:]) #separates id from msg
     if (msg):
-      for cID in clientele: #for each client
-        if cID != senderID: #if client not the sender
-          sendMsg = "playerMoved " +  str(senderID) + " " + msg + "\n" #create message to all other players!
+      ind = (msg.split(":")[0])
+      if ind=="peel":
+        for cID in clientele: #for each client
+          if cID != senderID: #if client not the sender
+            sendMsg = str(senderID) + " Peeled!" + Letters.peel() + "\n" #create message to all other players!
+          if cID == senderID: #if client is sender
+            sendMsg = "You Peeled!" + Letters.peel() + "\n" #create message to player
           clientele[cID].send(sendMsg.encode()) #encode and add it to dict
     serverChannel.task_done() #remove item from Q
 
@@ -51,8 +76,8 @@ while True: #loop for adding clients
   print(currID) #curr client ID
   for cID in clientele: #tell all other peoples that there is a new player!
     print (repr(cID), repr(currID))
-    clientele[cID].send(("newPlayer %d 100 100\n" % currID).encode()) #send new player info!
-    client.send(("newPlayer %d 100 100\n" % cID).encode()) #tell the new player about all the old players
+    clientele[cID].send(("newPlayer %d \n" % currID).encode()) #send new player info!
+    client.send(("newPlayer %d \n" % cID).encode()) #tell the new player about all the old players
   clientele[currID] = client #dont really understand this line
   print("connection recieved")
   threading.Thread(target = handleClient, args =  #create a new thread for this new client
