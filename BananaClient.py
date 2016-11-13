@@ -12,7 +12,7 @@ import socket
 import threading
 from queue import Queue
 
-HOST = "128.237.209.154"
+HOST = "128.237.180.202"
 PORT = 50003
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -217,6 +217,10 @@ def keyPressed(event, data):
             data.server.send(msg.encode())
         elif check==False: print("You're not out of tiles yet!")
         else: print("These aren't real words!:", check)
+    elif key == "Return":
+        msg = "Start:\n"
+        print("Sending: ", msg)
+        data.server.send(msg.encode())
     elif ignoreKey(event) and len(event.keysym == 1) and event.keysym.isalpha():
         msg = "Exchange:" + event.keysym + "\n"
         print("Sending: ", msg)
@@ -240,6 +244,11 @@ def timerFired(data):
         elif ind == "Exchange":
             print("Text is " + txt)
             letters = info.split(",")
+            data.tiles.extend(letters)
+        elif ind == "Start":
+            print("Text is " + txt)
+            letters = info.split(",")
+            print(letters)
             data.tiles.extend(letters)
 
       except:
