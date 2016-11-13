@@ -12,13 +12,6 @@ import socket
 import threading
 from queue import Queue
 
-f = open("dictionary.txt")
-d = []
-d = f.readlines()
-for i in range(len(d)):
-    d[i] = d[i].replace("\n", "")
-d = set(d)
-
 HOST = "128.237.180.202"
 PORT = 50003
 
@@ -42,6 +35,16 @@ def handleServerMsg(server, serverMsg): #handles msgs from server
 
 serverMsg = Queue(100)
 threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
+
+####################
+#Dictionary Things
+###################
+f = open("dictionary.txt")
+d = []
+d = f.readlines()
+for i in range(len(d)):
+    d[i] = d[i].replace("\n", "")
+d = set(d)
 ################################
 #Helpers
 ################################
