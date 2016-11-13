@@ -3,19 +3,8 @@
 from tkinter import *
 import math
 import string
-# import enchant
 import random
 
-<<<<<<< HEAD
-f = open("dictionary.txt")
-d = []
-for line in f:
-    l = f.readline()
-    l = l.replace("\n", "")
-    d.append(l)
-d = set(d)
-
-=======
 ####################
 #Multiplayer Things
 ####################
@@ -49,7 +38,6 @@ threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
 ################################
 #Helpers
 ################################
->>>>>>> origin/master
 def db(*args):
     dbOn = False
     if (dbOn): print(*args)
@@ -58,28 +46,14 @@ def make2dList(rows, cols, val): #adapted from course notes
     a=[]
     for row in range(rows): a += [[val]*cols]
     return a
-<<<<<<< HEAD
-# 
-=======
 ###############################
 #BananaGrams Graphics
 ###############################
->>>>>>> origin/master
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
-# <<<<<<< HEAD
     data.rows = 50
     data.cols = 50
-# =======
-    data.rows = 8
-    data.cols = 8
-# >>>>>>> origin/master
-    data.leftVisCol = 0
-    data.rightVisCol = 0
-    data.topVisRow = 0
-    data.botVisRow = 0
-    data.visCols = 0
     data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
@@ -92,23 +66,17 @@ def init(data):
     data.emptyWidth = 1 
     data.board = make2dList(data.rows, data.cols, "")
     data.margin = 10 # margin around grid
-<<<<<<< HEAD
-    data.sRow = 0 #sRow, sCol denotes user-selected cell
-    data.sCol = 0
-=======
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
-    # data.visRows = data.height//data.squareSize
-    # data.visCols = data.width//data.squareSize
+    data.visRows = 10
+    data.visCols = 10
     data.scrollMargin = data.squareSize
-    data.cx = data.sRow
+    data.cx = data.rows//2
     data.cy = data.sCol #in which we are trying to draw just the visible cells
-    # data.LeftRow = 
->>>>>>> origin/master
+    data.LeftRow = 
    
 def getWord(board):
     wordsList = []
-    # eh = set()
     for x in range(len(board)): #row
         for y in range(len(board[0])): #col
             if board[x][y] != "":
@@ -118,7 +86,7 @@ def getWord(board):
                         i = x
                         j = y
                         while j < len(board[0]) and  board[i][j] != "":
-                            word.append((board[i][j]).upper())
+                            word.append(board[i][j])
                             j+= 1
                         wordsList.append("".join(word))
                 if (x == 0 or board[x-1][y] == ""): #vertical
@@ -127,40 +95,25 @@ def getWord(board):
                         i = x
                         j = y
                         while i < len(board) and  board[i][j] != "":
-                            word.append((board[i][j]).upper())
+                            word.append(board[i][j])
                             i+= 1
                         wordsList.append("".join(word))
     return wordsList
-
-# def searchWord(word):
-#     # word += "\n"
-#     for words in d:
-#         if words == word:
-#             return True
-#     return False
     
 def checkWords(board):
     toCheck = getWord(board)
-    # d = enchant.Dict("en_US")
+    d = enchant.Dict("en_US")
     correctWords = []
     falseWords = []
     for a in toCheck:
-        if a in d:
+        if d.check(a):
             correctWords.append(a)
         else:
-            print(a)
             falseWords.append(a)
     if correctWords == toCheck:
         return True
     else:
         return falseWords
-
-board = [["a","t",""],["","h",""],["p","e","r"]]
-# print(d)
-print(checkWords(board))
-board = [["a","a","l"],["","b",""],["","",""]]
-print(checkWords(board))
-# print("AT" in d)
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
     data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
@@ -198,8 +151,6 @@ def getCell(x, y, data):
     col = min(data.cols-1, max(0, col))
     return (int(row), int(col))
 
-<<<<<<< HEAD
-=======
 def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
@@ -207,16 +158,15 @@ def moveCursor(drow, dcol, data):
     data.sy += (drow*data.squareSize)
     # if (data.sRow < data.scroll)
 
->>>>>>> origin/master
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
 
 def keyPressed(event, data):
     key = (event.keysym)
-    if key == "Up" and data.sRow > 0: data.sRow -= 1
-    elif key == "Down" and data.sRow < data.rows-1: data.sRow += 1
-    elif key == "Left" and data.sCol > 0: data.sCol -= 1
-    elif key == "Right" and data.sCol < data.cols-1: data.sCol += 1
+    if key == "Up" and data.sRow > 0: moveCursor(-1, 0, data)
+    elif key == "Down" and data.sRow < data.rows-1: moveCursor(+1, 0, data)
+    elif key == "Left" and data.sCol > 0: moveCursor(0, -1, data)
+    elif key == "Right" and data.sCol < data.cols-1: moveCursor(0, +1, data)
     elif key.upper() in data.tiles:
         if data.board[data.sRow][data.sCol] == data.EMPTY:
             data.tiles.remove(key.upper())
@@ -226,13 +176,13 @@ def keyPressed(event, data):
         data.board[data.sRow][data.sCol] = key.upper()
         data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
-        check = checkWords(data.board)
-        if isinstance(check,list):
-            #check contains false words
-            pass
-        elif check == True:
-            #all words on board are correct
-            pass
+        # check = checkWords(data.board)
+        # if isinstance(check,list):
+        #     #check contains false words
+        #     pass
+        # elif check == True:
+        #     #all words on board are correct
+        #     pass
     elif key == "space": return #add in remove tile
     elif key == "1":
         msg = "Peel:\n"
@@ -386,8 +336,4 @@ def run(width=300, height=300, serverMsg=None, server=None):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-<<<<<<< HEAD
-run(600, 600)
-=======
 run(600, 600, serverMsg, server)
->>>>>>> origin/master
