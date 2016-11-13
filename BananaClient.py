@@ -49,7 +49,7 @@ d = set(d)
 #Helpers
 ################################
 def db(*args):
-    dbOn = False
+    dbOn = True
     if (dbOn): print(*args)
 
 def make2dList(rows, cols, val): #adapted from course notes
@@ -59,7 +59,7 @@ def make2dList(rows, cols, val): #adapted from course notes
 ###############################
 #BananaGrams Graphics
 ###############################
-def init(data):
+def init(data, canvas):
     data.sidebarWidth = 120
     data.squareSize = 40
     data.rows = 50
@@ -75,18 +75,20 @@ def init(data):
     data.fillWidth = 2
     data.emptyWidth = 1 
     data.board = make2dList(data.rows, data.cols, "")
+    data.board[0][0] = "A"
     data.margin = 10 # margin around grid
     data.sRow = data.rows//2 #sRow, sCol denotes user-selected cell
     data.sCol = data.cols//2
     data.visRows = 10
     data.visCols = 10
-    data.scrollMargin = data.squareSize
-    data.cRow = data.sRow
-    data.cCol = data.sCol #in which we are trying to draw just the visible cells
+    # data.scrollMargin = data.squareSize
+    data.cRow = data.rows//2
+    data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
     data.rightCol = data.leftCol + data.visCols
     data.topRow = data.cRow-data.visRows//2
     data.bottomRow = data.topRow + data.visRows
+    db(data.leftCol,data.rightCol,data.topRow,data.bottomRow)
    
 def getWord(board):
     wordsList = []
@@ -127,14 +129,9 @@ def checkWords(board):
     else:
         return falseWords
 
-board = [["a","t",""],["","h",""],["p","e","r"]]
-print(checkWords(board))
-board = [["a","a","l"],["","b",""],["","a","b"]]
-print(checkWords(board))
-
 def updateRowsCols(data): #double-check/fix shit when you're awake
-    data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
-    data.cols = (data.width - data.sidebarWidth)//data.squareSize
+    data.visRows = data.height//data.squareSize
+    data.visCols = data.width//data.squareSize
 
 def updateTileTray(data, tileBoard):
     index = 0
@@ -171,10 +168,18 @@ def getCell(x, y, data):
 def moveCursor(drow, dcol, data):
     data.sRow += drow
     data.sCol += dcol
-    if (data.sCol < data.leftCol): data.leftCol = data.cCol-data.visCols//2
-    elif (data.sCol >= data.rightCol):  data.rightCol = data.leftCol + data.visCols
-    elif (data.sRow < data.topRow): data.topRow = data.cRow-data.visRows//2
-    elif (data.sRow >= data.bottomRow): data.bottomRow = data.topRow + data.visRows
+    if (data.sCol < data.leftCol): 
+        data.cCol -= 1
+        data.leftCol = data.cCol-data.visCols//2
+    elif (data.sCol >= data.rightCol):  
+        data.cCol += 1
+        data.rightCol = data.leftCol + data.visCols
+    elif (data.sRow < data.topRow): 
+        data.cRow -= 1
+        data.topRow = data.cRow-data.visRows//2
+    elif (data.sRow >= data.bottomRow): 
+        data.cRow += 1
+        data.bottomRow = data.topRow + data.visRows
 
 def mousePressed(event, data):
     (data.sRow, data.sCol) = getCell(event.x, event.y, data)
@@ -241,12 +246,9 @@ def getTileCellBounds(row, col, data):
     return (x0, y0, x1, y1)
 
 def getCellBounds(row, col, data):
+    row = (data.visRows//2)-(data.cRow-row)
+    col = (data.visCols//2)-(data.cCol-col)
     # aka "modelToView"
-    # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
-    gridWidth  = data.width - 2*data.margin
-    gridHeight = data.height - 3*data.margin
-    # columnWidth = gridWidth / (data.cols)
-    # rowHeight = gridHeight / (data.rows+data.trayRows)
     x0 = data.margin + col * data.squareSize
     x1 = data.margin + (col+1) * data.squareSize
     y0 = data.margin + row * data.squareSize
@@ -287,12 +289,12 @@ def drawTiles(canvas, data):
                 canvas.create_text((x0+x1)/2, (y0+y1)/2, text=data.tileBoard[row][col], font="Helvetica 20")
 
 def drawGrid(canvas, data):
-    for row in range(data.visRows):
-        for col in range(data.visCols):
+    for row in range(data.topRow, data.bottomRow):
+        for col in range(data.leftCol, data.rightCol):
             (x0, y0, x1, y1) = getCellBounds(row, col, data)
             fill = data.emptyColor
             width = data.emptyWidth
-            if data.board[data.topRow+row][data.leftCol+col] != data.EMPTY:
+            if data.board[row][col] != data.EMPTY:
                 fill = data.fillColor
                 width = data.fillWidth
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
@@ -328,7 +330,7 @@ def run(width=300, height=300, serverMsg=None, server=None):
     def sizeChanged(event, data):
         data.width = event.width
         data.height = event.height
-        #updateRowsCols(data)
+        updateRowsCols(data)
         redrawAll(canvas, data)
 
     # Set up data and call init
@@ -339,14 +341,13 @@ def run(width=300, height=300, serverMsg=None, server=None):
     data.width = width
     data.height = height
     data.timerDelay = 100 # milliseconds
-    init(data)
     # create the root and the canvas
     root = Tk()
     canvas = Canvas(root, width=data.width, height=data.height)
     canvas.pack(fill=BOTH, expand=YES)
     root.canvas = canvas.canvas = canvas
     canvas.data = {}
-    init(canvas)
+    init(data, canvas)
     # set up events
     root.bind("<Button-1>", lambda event:
                             mousePressedWrapper(event, canvas, data))
