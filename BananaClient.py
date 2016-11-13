@@ -152,11 +152,11 @@ def getCell(x, y, data):
     # aka "viewToModel"
     # return (row, col) in which (x, y) occurred or (-1, -1) if outside grid.
     if (not pointInGrid(x, y, data)):
-        return (0, 0)
+        return None
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
-    row = (y - data.margin) // data.squareSize
-    col = (x - data.margin) // data.squareSize
+    row = data.topRow + (y - data.margin) // data.squareSize
+    col = data.leftCol + (x - data.margin) // data.squareSize
     # triple-check that we are in bounds
     row = min(data.rows-1, max(0, row))
     col = min(data.cols-1, max(0, col))
@@ -183,7 +183,13 @@ def moveCursor(drow, dcol, data):
         data.bottomRow = data.cRow+(data.visRows//2)
 
 def mousePressed(event, data):
-    (data.sRow, data.sCol) = getCell(event.x, event.y, data)
+    if getCell(event.x, event.y, data) != None:
+        (data.sRow, data.sCol) = getCell(event.x, event.y, data)
+        (data.cRow, data.cCol) = (data.sRow, data.sCol)
+        data.leftCol = data.cCol-data.visCols//2
+        data.rightCol = data.cCol+(data.visCols//2)
+        data.topRow = data.cRow-data.visRows//2
+        data.bottomRow = data.cRow+(data.visRows//2)
 
 def keyPressed(event, data):
     key = (event.keysym)
