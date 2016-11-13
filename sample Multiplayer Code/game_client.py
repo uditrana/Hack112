@@ -10,7 +10,7 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.connect((HOST,PORT))
 print("connected to server")
 
-def handleServerMsg(server, serverMsg):
+def handleServerMsg(server, serverMsg): #handles msgs from server
   server.setblocking(1)
   msg = ""
   command = ""
