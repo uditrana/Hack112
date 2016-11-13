@@ -89,13 +89,24 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
         print("Exchange a letter with three")
         if Pile.total < 3:
           print("Not enough letters to exchange")
-          clientele[senderID] = "Exchange falied!:Not enough letters to exchange:"
+          sendMsg = "Exchange falied!:Not enough letters to exchange:"
+          clientele[senderID].send(sendMsg.encode())
         else:
-          repLetter = msg.split(":")[0]
+          repLetter = msg.split(":")[1]
           ind += ":"
           txt = "You exchanged " + letter + ":"
           info = Pile.exchange(letter)
-          clientele[senderID] = ind + txt + info
+          sendMsg = ind + txt + info
+          clientele[senderID].send(sendMsg.encode())
+      if ind == "Start":
+        print("Start the game")
+        ind += ":"
+        txt = "Game is starting:"
+        for cID in clientele:
+          info = Pile.start()
+          sendMsg = ind + txt + info
+          print(sendMsg)
+          clientele[cID].send(sendMsg.encode())
 
     serverChannel.task_done() #remove item from Q
 
