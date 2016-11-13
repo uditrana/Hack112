@@ -218,6 +218,11 @@ def timerFired(data):
           print ("Text is "+txt)
           letter = info
           data.tiles.append(letter)
+        elif ind == "Replace":
+            print("Text is " + txt)
+            letters = info.split(",")
+            data.tiles.extend(letters)
+
       except:
         print("failed")
       serverMsg.task_done()
