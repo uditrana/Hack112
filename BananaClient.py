@@ -26,6 +26,7 @@ def init(data):
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
 
+#cell stuff from Course Notes
 def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
     return ((data.margin <= x <= data.width-data.margin) and
@@ -34,8 +35,8 @@ def pointInGrid(x, y, data):
 def getCell(x, y, data):
     # aka "viewToModel"
     # return (row, col) in which (x, y) occurred or (-1, -1) if outside grid.
-    #if (not pointInGrid(x, y, data)):
-    #    return (-1, -1)
+    if (not pointInGrid(x, y, data)):
+        return (-1, -1)
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
     cellWidth  = gridWidth / data.cols
@@ -52,10 +53,10 @@ def mousePressed(event, data):
 
 def keyPressed(event, data):
     key = (event.keysym)
-    if key == "Up": data.sRow -= 1
-    elif key == "Down": data.sRow += 1
-    elif key == "Left": data.sCol -= 1
-    elif key == "Right": data.sCol += 1
+    if key == "Up" and data.sRow > 0: data.sRow -= 1
+    elif key == "Down" and data.sRow < data.rows-1: data.sRow += 1
+    elif key == "Left" and data.sCol > 0: data.sCol -= 1
+    elif key == "Right" and data.sCol < data.cols-1: data.sCol += 1
     elif key in data.tiles: data.board[data.sRow][data.sCol] = key.upper()
 
 def timerFired(data):
@@ -73,12 +74,6 @@ def getCellBounds(row, col, data):
     y0 = data.margin + row * rowHeight
     y1 = data.margin + (row+1) * rowHeight
     return (x0, y0, x1, y1)
-
-def sizeChanged(event):
-    canvas = event.widget.canvas
-    canvas.width = event.width - 10
-    canvas.height = event.height - 10
-    redrawAll(canvas)
 
 def redrawAll(canvas, data):
     # draw grid of cells
@@ -112,7 +107,7 @@ def drawGrid(canvas, data):
                 width = data.fillWidth
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill, width=width)
 
-    
+
 
 ####################################
 # use the run function as-is
@@ -139,6 +134,12 @@ def run(width=300, height=300):
         redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+
+    def sizeChanged(event, data):
+        data.width = event.width
+        data.height = event.height
+        redrawAll(canvas, data)
+
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
@@ -159,7 +160,7 @@ def run(width=300, height=300):
                             mousePressedWrapper(event, canvas, data))
     root.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data))
-    root.bind("<Configure>", sizeChanged)
+    root.bind("<Configure>", lambda event: sizeChanged(event, data))
     timerFiredWrapper(canvas, data)
     root.minsize(data.width+data.winMargin, data.height+data.winMargin)
     # and launch the app
