@@ -11,7 +11,7 @@ server.bind((HOST,PORT))
 server.listen(BACKLOG)
 print("looking for connection")
 
-class Letters(object):
+class Pile(object):
   def __init__(self):
     pass
   d = ({'A':13, 'B':3, 'C':3, 'D':6, 'E':18, 'F':3, 'G':4,'H':3, 'I':12, 
@@ -22,8 +22,8 @@ class Letters(object):
     while True:
       n = random.randint(65,90)
       letter = chr(n)
-      if Letters.d[letter] > 0:
-        Letters.d[letter] -= 1
+      if Pile.d[letter] > 0:
+        Pile.d[letter] -= 1
         break
     print(letter +" was peeled!")
     return letter
@@ -58,9 +58,9 @@ def serverThread(clientele, serverChannel): #processes shit on the Q
       if ind=="peel":
         for cID in clientele: #for each client
           if cID != senderID: #if client not the sender
-            sendMsg = str(senderID) + " Peeled!" + Letters.peel() + "\n" #create message to all other players!
+            sendMsg = str(senderID) + " Peeled!" + Pile.peel() + "\n" #create message to all other players!
           if cID == senderID: #if client is sender
-            sendMsg = "You Peeled!" + Letters.peel() + "\n" #create message to player
+            sendMsg = "You Peeled!" + Pile.peel() + "\n" #create message to player
           clientele[cID].send(sendMsg.encode()) #encode and add it to dict
     serverChannel.task_done() #remove item from Q
 
