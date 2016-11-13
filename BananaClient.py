@@ -1,54 +1,24 @@
 # grid-demo.py
 
 from tkinter import *
+###############################
+#Helpers
+###############################
+def make2dList(rows, col, val): #adapted from course notes
+    a=[]
+    for row in range(rows): a += [[val]*cols]
+    return a
 
 def init(data):
-    data.rows = 4
+    data.rows = 8
     data.cols = 8
-    data.margin = 5 # margin around grid
+    data.EMPTY = ""
+    data.board = make2dList(data.rows, data.cols, data.EMPTY)
+    data.margin = 10 # margin around grid
     data.selection = (-1, -1) # (row, col) of selection, (-1,-1) for none
 
-def pointInGrid(x, y, data):
-    # return True if (x, y) is inside the grid defined by data.
-    return ((data.margin <= x <= data.width-data.margin) and
-            (data.margin <= y <= data.height-data.margin))
-
-def getCell(x, y, data):
-    # aka "viewToModel"
-    # return (row, col) in which (x, y) occurred or (-1, -1) if outside grid.
-    if (not pointInGrid(x, y, data)):
-        return (-1, -1)
-    gridWidth  = data.width - 2*data.margin
-    gridHeight = data.height - 2*data.margin
-    cellWidth  = gridWidth / data.cols
-    cellHeight = gridHeight / data.rows
-    row = (y - data.margin) // cellHeight
-    col = (x - data.margin) // cellWidth
-    # triple-check that we are in bounds
-    row = min(data.rows-1, max(0, row))
-    col = min(data.cols-1, max(0, col))
-    return (row, col)
-
-def getCellBounds(row, col, data):
-    # aka "modelToView"
-    # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
-    gridWidth  = data.width - 2*data.margin
-    gridHeight = data.height - 2*data.margin
-    columnWidth = gridWidth / data.cols
-    rowHeight = gridHeight / data.rows
-    x0 = data.margin + col * columnWidth
-    x1 = data.margin + (col+1) * columnWidth
-    y0 = data.margin + row * rowHeight
-    y1 = data.margin + (row+1) * rowHeight
-    return (x0, y0, x1, y1)
-
 def mousePressed(event, data):
-    (row, col) = getCell(event.x, event.y, data)
-    # select this (row, col) unless it is selected
-    if (data.selection == (row, col)):
-        data.selection = (-1, -1)
-    else:
-        data.selection = (row, col)
+    if data.event.x
 
 def keyPressed(event, data):
     pass
@@ -112,4 +82,4 @@ def run(width=300, height=300):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(300, 300)
+run(600, 600)
