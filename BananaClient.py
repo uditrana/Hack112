@@ -3,11 +3,19 @@
 from tkinter import *
 import math
 import string
-import enchant
+# import enchant
 import random
 ###############################
 #BananaGrams Graphics
 ###############################
+
+f = open("dictionary.txt")
+d = []
+for line in f:
+    l = f.readline()
+    l = l.replace("\n", "")
+    d.append(l)
+d = set(d)
 
 def db(*args):
     dbOn = False
@@ -50,7 +58,7 @@ def init(data):
    
 def getWord(board):
     wordsList = []
-    eh = set()
+    # eh = set()
     for x in range(len(board)): #row
         for y in range(len(board[0])): #col
             if board[x][y] != "":
@@ -60,7 +68,7 @@ def getWord(board):
                         i = x
                         j = y
                         while j < len(board[0]) and  board[i][j] != "":
-                            word.append(board[i][j])
+                            word.append((board[i][j]).upper())
                             j+= 1
                         wordsList.append("".join(word))
                 if (x == 0 or board[x-1][y] == ""): #vertical
@@ -69,25 +77,40 @@ def getWord(board):
                         i = x
                         j = y
                         while i < len(board) and  board[i][j] != "":
-                            word.append(board[i][j])
+                            word.append((board[i][j]).upper())
                             i+= 1
                         wordsList.append("".join(word))
     return wordsList
+
+# def searchWord(word):
+#     # word += "\n"
+#     for words in d:
+#         if words == word:
+#             return True
+#     return False
     
 def checkWords(board):
     toCheck = getWord(board)
-    d = enchant.Dict("en_US")
+    # d = enchant.Dict("en_US")
     correctWords = []
     falseWords = []
     for a in toCheck:
-        if d.check(a):
+        if a in d:
             correctWords.append(a)
         else:
+            print(a)
             falseWords.append(a)
     if correctWords == toCheck:
         return True
     else:
         return falseWords
+
+board = [["a","t",""],["","h",""],["p","e","r"]]
+# print(d)
+print(checkWords(board))
+board = [["a","a","l"],["","b",""],["","",""]]
+print(checkWords(board))
+# print("AT" in d)
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
     data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
