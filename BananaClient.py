@@ -3,6 +3,8 @@
 from tkinter import *
 import math
 import string
+import enchant
+import random
 ###############################
 #BananaGrams Graphics
 ###############################
@@ -19,8 +21,13 @@ def make2dList(rows, cols, val): #adapted from course notes
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
+<<<<<<< HEAD
+    data.rows = 50
+    data.cols = 50
+=======
     data.rows = 8
     data.cols = 8
+>>>>>>> origin/master
     data.leftVisCol = 0
     data.rightVisCol = 0
     data.topVisRow = 0
@@ -40,6 +47,47 @@ def init(data):
     data.margin = 10 # margin around grid
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
+   
+def getWord(board):
+    wordsList = []
+    eh = set()
+    for x in range(len(board)): #row
+        for y in range(len(board[0])): #col
+            if board[x][y] != "":
+                if (y == 0 or board[x][y-1] == ""): #horizontal
+                    if y < (len(board)-1) and board[x][y+1] != "":
+                        word = []
+                        i = x
+                        j = y
+                        while j < len(board[0]) and  board[i][j] != "":
+                            word.append(board[i][j])
+                            j+= 1
+                        wordsList.append("".join(word))
+                if (x == 0 or board[x-1][y] == ""): #vertical
+                    if x < (len(board[0])-1) and board[x+1][y] != "":
+                        word = []
+                        i = x
+                        j = y
+                        while i < len(board) and  board[i][j] != "":
+                            word.append(board[i][j])
+                            i+= 1
+                        wordsList.append("".join(word))
+    return wordsList
+    
+def checkWords(board):
+    toCheck = getWord(board)
+    d = enchant.Dict("en_US")
+    correctWords = []
+    falseWords = []
+    for a in toCheck:
+        if d.check(a):
+            correctWords.append(a)
+        else:
+            falseWords.append(a)
+    if correctWords == toCheck:
+        return True
+    else:
+        return falseWords
 
 def updateRowsCols(data): #double-check/fix shit when you're awake
     data.rows = (data.height - (data.trayRows*data.squareSize))//data.squareSize
@@ -95,6 +143,13 @@ def keyPressed(event, data):
         data.board[data.sRow][data.sCol] = key.upper()
         data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
+        check = checkWords(data.board)
+        if isinstance(check,list):
+            #check contains false words
+            pass
+        elif check == True:
+            #all words on board are correct
+            pass
     elif key == "space": return #add in remove tile
 
 def timerFired(data):
