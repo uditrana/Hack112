@@ -5,36 +5,36 @@ import math
 import string
 import random
 
-####################
-#Multiplayer Things
-####################
-import socket
-import threading
-from queue import Queue
+# ####################
+# #Multiplayer Things
+# ####################
+# import socket
+# import threading
+# from queue import Queue
 
-HOST = "128.237.209.154"
-PORT = 50003
+# HOST = "128.237.209.154"
+# PORT = 50003
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
-server.connect((HOST,PORT))
-print("connected to server")
+# server.connect((HOST,PORT))
+# print("connected to server")
 
-def handleServerMsg(server, serverMsg): #handles msgs from server
-  server.setblocking(1)
-  msg = ""
-  command = ""
-  while True:
-    msg += server.recv(10).decode("UTF-8")
-    command = msg.split("\n")
-    while (len(command) > 1):
-      readyMsg = command[0]
-      msg = "\n".join(command[1:])
-      serverMsg.put(readyMsg)
-      command = msg.split("\n")
+# def handleServerMsg(server, serverMsg): #handles msgs from server
+#   server.setblocking(1)
+#   msg = ""
+#   command = ""
+#   while True:
+#     msg += server.recv(10).decode("UTF-8")
+#     command = msg.split("\n")
+#     while (len(command) > 1):
+#       readyMsg = command[0]
+#       msg = "\n".join(command[1:])
+#       serverMsg.put(readyMsg)
+#       command = msg.split("\n")
 
-serverMsg = Queue(100)
-threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
+# serverMsg = Queue(100)
+# threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
 
 ####################
 #Dictionary Things
@@ -80,6 +80,7 @@ def init(data, canvas):
     data.sCol = data.cols//2
     data.visRows = 10
     data.visCols = 10
+    # data.scrollMargin = data.squareSize
     data.cRow = data.rows//2
     data.cCol = data.cols//2 #in which we are trying to draw just the visible cells
     data.leftCol = data.cCol-data.visCols//2
@@ -117,7 +118,6 @@ def checkWords(board):
     toCheck = getWord(board)
     correctWords = []
     falseWords = []
-    if len(data.tiles) != 0: return False
     for a in toCheck:
         if a in d:
             correctWords.append(a)
@@ -137,7 +137,7 @@ def updateTileTray(data, tileBoard):
     for row in range(data.trayRows):
         for col in range(data.trayCols):
             if index < len(data.tiles):
-                # db("tiles/tileboard", data.tiles, tileBoard)
+                db("tiles/tileboard", data.tiles, tileBoard)
                 tileBoard[row][col] = data.tiles[index]
             index += 1
     return tileBoard
@@ -155,6 +155,8 @@ def getCell(x, y, data):
         return (0, 0)
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
+    # cellWidth  = gridWidth / (data.cols+data.trayCols)
+    # cellHeight = gridHeight / (data.rows+data.trayRows)
     row = (y - data.margin) // data.squareSize
     col = (x - data.margin) // data.squareSize
     # triple-check that we are in bounds
@@ -198,6 +200,7 @@ def keyPressed(event, data):
             data.tiles.remove(key.upper())
             data.tiles.append(data.board[data.sRow][data.sCol])
         data.board[data.sRow][data.sCol] = key.upper()
+        data.tiles.sort()
         data.tileBoard = updateTileTray(data, make2dList(data.trayRows, data.trayCols, ""))
     elif key == "space":
         if data.board[data.sRow][data.sCol] != data.EMPTY:
@@ -208,43 +211,44 @@ def keyPressed(event, data):
         if check==True:
             msg = "Peel:\n"
             print ("sending: ", msg,)
-            data.server.send(msg.encode())
-        elif check==False: print("You're not out of tiles yet!")
+            # data.server.send(msg.encode())
         else: print("These aren't real words!:", check)
     elif ignoreKey(event) and len(event.keysym == 1) and event.keysym.isalpha():
         msg = "Exchange:" + event.keysym + "\n"
         print("Sending: ", msg)
-        data.server.send(msg.encode())
+        # data.server.send(msg.encode())
 def ignoreKey(event):
     # Helper function to return the key from the given event
     ignoreSyms = [ "Shift_L", "Shift_R", "Control_L", "Control_R", "Caps_Lock" ]
     return (event.keysym in ignoreSyms)
 def timerFired(data):
     updateTileTray(data, data.tileBoard)
-    if (serverMsg.qsize() > 0):
-      msg = serverMsg.get(False)
-      try:
-        print("recieved: ", msg)
-        msg = msg.split(":")
-        ind, txt, info= msg[0], msg[1],msg[2]
-        if ind=="Peel":
-          print ("Text is "+txt)
-          letter = info
-          data.tiles.append(letter)
-        elif ind == "Exchange":
-            print("Text is " + txt)
-            letters = info.split(",")
-            data.tiles.extend(letters)
+    # if (serverMsg.qsize() > 0):
+    #   msg = serverMsg.get(False)
+    #   try:
+    #     print("recieved: ", msg)
+    #     msg = msg.split(":")
+    #     ind, txt, info= msg[0], msg[1],msg[2]
+    #     if ind=="Peel":
+    #       print ("Text is "+txt)
+    #       letter = info
+    #       data.tiles.append(letter)
+    #     elif ind == "Exchange":
+    #         print("Text is " + txt)
+    #         letters = info.split(",")
+    #         data.tiles.extend(letters)
 
-      except:
-        print("failed")
-      serverMsg.task_done()
+    #   except:
+    #     print("failed")
+    #   serverMsg.task_done()
 
 def getTileCellBounds(row, col, data):
     # aka "modelToView"
     # returns (x0, y0, x1, y1) corners/bounding box of given cell in grid
     gridWidth  = data.width - 2*data.margin
     gridHeight = data.height - 2*data.margin
+    # columnWidth = gridWidth / (data.cols)
+    # rowHeight = gridHeight / (data.rows+data.trayRows)
     x0 = data.margin + col * data.squareSize
     x1 = data.margin + (col+1) * data.squareSize
     y0 = gridHeight - ((row+1) * data.squareSize)
@@ -366,4 +370,4 @@ def run(width=300, height=300, serverMsg=None, server=None):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run(600, 600, serverMsg, server)
+run(600, 600)
