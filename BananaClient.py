@@ -19,8 +19,13 @@ def make2dList(rows, cols, val): #adapted from course notes
 def init(data):
     data.sidebarWidth = 120
     data.squareSize = 40
-    data.rows = 10
-    data.cols = 10
+    data.rows = 50
+    data.cols = 50
+    data.leftVisCol = 
+    data.rightVisCol = 
+    data.topVisRow = 
+    data.botVisRow = 
+    data.visCols = 0
     data.tiles = ["B", "A", "N", "A", "N", "A", "G", "R", "A", "M", "S",]
     data.trayRows = int(math.ceil(len(data.tiles)/data.cols))
     data.trayCols = min(len(data.tiles), data.cols)
@@ -31,7 +36,7 @@ def init(data):
     data.sWidth = 4
     data.fillWidth = 2
     data.emptyWidth = 1 
-    data.board = make2dList(data.rows, data.cols, data.EMPTY)
+    data.board = make2dList(data.rows, data.cols, "B")
     data.margin = 10 # margin around grid
     data.sRow = 0 #sRow, sCol denotes user-selected cell
     data.sCol = 0
