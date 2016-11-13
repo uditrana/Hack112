@@ -257,13 +257,14 @@ def keyPressed(event, data):
             data.board[data.sRow][data.sCol] = data.EMPTY#add in remove tile
     elif key == "1":
         check = checkWords(data, data.board)
-        legal = isLegal(data)
-        if legal and check:
+        print(check)
+        #legal = isLegal(data)
+        if isinstance(check, str): printToSideBar(data,"Invalid:"+check)
+        elif check==False: printToSideBar(data,"Not out of tiles yet!")
+        elif check:
             msg = "Peel:\n"
             printToSideBar(data,msg)
             data.server.send(msg.encode())
-        elif check==False: printToSideBar(data,"Not out of tiles yet!")
-        else: printToSideBar(data,"Invalid:"+check)
     elif key == "Return":
         msg = "Start:\n"
         printToSideBar(data,msg)
