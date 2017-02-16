@@ -3,7 +3,7 @@ import threading
 import random
 from queue import Queue
 
-HOST = "128.237.180.202" #current IP in GHC6115
+HOST = "128.237.204.145" #current IP in GHC6115
 PORT = 50003
 BACKLOG = 4
 
